@@ -176,7 +176,6 @@ void SystemClock_Config(void)
   */
 static void MX_TIM3_Init(void)
 {
-
   /* USER CODE BEGIN TIM3_Init 0 */
 
   /* USER CODE END TIM3_Init 0 */
@@ -426,10 +425,9 @@ static void MX_GPIO_Init(void)
 //定时器计时溢出中断
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	u32 temp_rx;
-	//TIMER_OFF();
 	if(htim == &(htim4))
 	{
+		TIMER_OFF();
 		timer_counter += 1;
 		if(ZONE_FLAG == HOT_ZONE && timer_counter >= (HOT_ZONE_SPIN_DELAY/TIMER_OVERFLOW_TIME))
 		{
@@ -439,11 +437,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  obstacle_avoidance(lidar_avoid_params,deducted_obstacle_array,
 												obstacle_detection(lidar_avoid_params,10,1,&huart2,&RINGBUFF_UART2,LENGTH_OF_BUFF,frame_data));
 			#else
-			temp_rx = read_one_frame_mmwave(&RINGBUFF_UART3,LENGTH_OF_BUFF);
-			if(temp_rx != 0)
-				printf("\n=>Object number:%d,minimum distance:%d\n",(u8)(temp_rx>>16),(u16)(temp_rx));
+			obstacle_avoidance(mmWAVE_avoid_params,deducted_obstacle_array,
+													obstacle_detection(mmWAVE_avoid_params,&RINGBUFF_UART3,LENGTH_OF_BUFF));
 			#endif
-			//HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_11);
+			
 		}
 		else if(ZONE_FLAG == COLD_ZONE && timer_counter >= (COLD_ZONE_SPIN_DELAY/TIMER_OVERFLOW_TIME))
 		{
@@ -453,13 +450,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		  obstacle_avoidance(lidar_avoid_params,deducted_obstacle_array,
 												obstacle_detection(lidar_avoid_params,10,1,&huart2,&RINGBUFF_UART2,LENGTH_OF_BUFF,frame_data));
 			#else
-			
+			obstacle_avoidance(mmWAVE_avoid_params,deducted_obstacle_array,
+													obstacle_detection(mmWAVE_avoid_params,&RINGBUFF_UART3,LENGTH_OF_BUFF));			
 			#endif
 			
 		}
-		
+		HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_11);
+		TIMER_ON();
 	}
-	//TIMER_ON();
+	
 }
 /* USER CODE END 4 */
 

@@ -119,18 +119,60 @@ u8 obstacle_detection(avoidance_obj lidar_avoid_params,u8 sample_rate,float f_c,
 }
 #endif
 
+#if OA_SENSOR == mmWAVE
 
-void obstacle_avoidance(avoidance_obj lidar_avoid_params,u8 * deducted_obstacle_array,u8 minimumm_distance)
+avoidance_obj mmWAVE_avoid_params={300,800,200};
+u16 obstacle_detection(avoidance_obj mmWAVE_avoid_params,RingBuff_t * ringbuff,u16 RINGBUFF_LEN)
+{
+	int32_t temp1=0;//临时变量
+	u16 minimum_dis = 0;
+	u32 mmwave_data;
+		/*Step 1:检测障碍物距离，读取当前舵机角度*/
+		mmwave_data = read_one_frame_mmwave(ringbuff,LENGTH_OF_BUFF);
+		while((mmwave_data&0x00FF) < 15)
+		{
+			HAL_Delay(100);
+			mmwave_data = read_one_frame_mmwave(ringbuff,LENGTH_OF_BUFF);
+		}
+	  minimum_dis = (u16)mmwave_data;
+
+		/*Sub step 1:计算障碍物的距离，如果小于热区hotzone设定的分界值，则设定为热区模式*/
+		if(minimum_dis <= mmWAVE_avoid_params.hotzone_limit) ZONE_FLAG = HOT_ZONE;
+		else ZONE_FLAG = COLD_ZONE;
+//		printf("Current mode:%d\n",ZONE_FLAG);
+		
+		if(minimum_dis <= mmWAVE_avoid_params.secure_distance)
+		{
+			for(temp1=1;temp1<4;temp1++)
+			{
+				deducted_obstacle_array[temp1] = 1;
+			}				
+		}else{
+			for(temp1=1;temp1<4;temp1++)
+			{
+				deducted_obstacle_array[temp1] = 0;
+			}
+		}
+		/*=========注意！毫米波雷达只能代表监测三个角度的障碍物，两边的障碍物检测需要加传感器！*/
+		deducted_obstacle_array[0] = 1;
+		deducted_obstacle_array[4] = 1;
+		//目前默认两边也有障碍物
+		
+	return minimum_dis;	
+}
+#endif
+
+void obstacle_avoidance(avoidance_obj avoid_params,u8 * deducted_obstacle_array,u16 minimum_distance)
 {
 	u16 byte_form_array=0;
 	u8 temp1;
 	u16 temp2;
-//	printf("minimum distance:%d, set param:%d",minimumm_distance,lidar_avoid_params.minimum_distance);
-//	printf("\n");
-//	for(temp1=0;temp1<5;temp1++)
-//	{
-//		printf("%d ",deducted_obstacle_array[temp1]);
-//	}printf("\n");
+	printf("minimum distance:%d, set param:%d",minimum_distance,lidar_avoid_params.minimum_distance);
+	printf("\n");
+	for(temp1=0;temp1<5;temp1++)
+	{
+		printf("%d ",deducted_obstacle_array[temp1]);
+	}printf("\n");
 	
 	for(temp1=0;temp1<5;temp1++)
 	{
@@ -139,8 +181,13 @@ void obstacle_avoidance(avoidance_obj lidar_avoid_params,u8 * deducted_obstacle_
 	}
 	//printf("byte form:%d\n",byte_form_array);
 	
-	if(byte_form_array == 0x17||byte_form_array == 0x15||
-		byte_form_array == 0x1d||minimumm_distance <= lidar_avoid_params.minimum_distance)backward(16);//当1的个数大于4或障碍数组为10101时，倒车
+	if(byte_form_array == 0x17||byte_form_array == 0x15||byte_form_array == 0x1d||
+		byte_form_array == 0x1f||minimum_distance <= lidar_avoid_params.minimum_distance)
+			{
+				stop();
+			  HAL_Delay(100);	
+				backward(16);
+			}//当1的个数大于4或障碍数组为10101时，倒车
 	else if((byte_form_array & 0x0e) == 0x00) forward(16);
 	else if((byte_form_array&0x1c)>>3 >= (byte_form_array&0x07)) left_steel();
 	else if((byte_form_array&0x1c)>>3 < (byte_form_array&0x07)) right_steel();

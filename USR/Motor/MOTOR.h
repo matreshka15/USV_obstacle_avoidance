@@ -2,8 +2,7 @@
 #define MOTOR
 #include "sys.h"
 #include "main.h"
-
-#define left() turn(80,150)
+#include "stdio.h"
 void TIM_SetTIM3Compare2(u32 compare);
 void TIM_SetTIM3Compare3(u32 compare);
 

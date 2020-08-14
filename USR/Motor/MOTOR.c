@@ -1,10 +1,6 @@
 #include "MOTOR.h"
 
-//void forward(void)
-//{
-//	HAL_GPIO_TogglePin(GPIOB,GPIO_PIN_11);
-//	//HAL_GPIO_WritePin()
-//}
+
 void TIM_SetTIM3Compare2(u32 compare)
 {
 	TIM3->CCR2=compare;
@@ -53,17 +49,20 @@ void right_wheel_stop(void)
 
 void forward(u8 speed_pwm)
 {
+	printf("forward\n");
 	left_wheel_forward(speed_pwm);
 	right_wheel_forward((u8)((float)speed_pwm*1.3));
 }
 
 void backward(u8 speed_pwm)
 {
+	printf("backward\n");
 	left_wheel_backward(speed_pwm);
 	right_wheel_backward((u8)((float)speed_pwm*1.5));	
 }
 void stop(void)
 {
+	printf("stop\n");
 	right_wheel_stop();
 	left_wheel_stop();
 }
@@ -75,9 +74,11 @@ void turn(u8 left_speed_pwm,u8 right_speed_pwm)
 }
 void left_steel(void)
 {
+	printf("left\n");
 	turn(18,25);
 }
 void right_steel(void)
 {
+	printf("right\n");
 	turn(25,18);
 }

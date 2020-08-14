@@ -3,7 +3,7 @@
 
 #include "sys.h"
 #include "USART.h"
-#define LENGTH_OF_BUFF 30
+#define LENGTH_OF_BUFF 40
 /*环形缓冲区结构体定义*/
 typedef struct
 {
