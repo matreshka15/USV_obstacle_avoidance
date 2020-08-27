@@ -5,8 +5,11 @@
 ##  一. 基本说明
   ### 文件目录
   * OA-without-OS目录下存放无操作系统版本的避障工程
-  * OA-with-OS目录下存放基于freertos操作系统的避障工程
-  * *两工程各自独立，分别烧录均可运行*
+  * OA-with-OS-xxxxx存放基于freertos操作系统的避障工程
+    * OA-with-OS -integrated-ver中存放下面方案一与方案三综合后的项目，具体使用方案一还是方案三可以条件编译
+    * OA-with-OS-lidar-ver中存放方案一的项目工程
+    * OA-with-OS -mmwave-ver中存放方案三的工程
+  * *各个工程相互独立，分别烧录均可运行*
   
   
   ### 避障方案
