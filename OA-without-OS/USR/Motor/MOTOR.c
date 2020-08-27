@@ -58,7 +58,7 @@ void backward(u8 speed_pwm)
 {
 	printf("backward\n");
 	left_wheel_backward(speed_pwm);
-	right_wheel_backward((u8)((float)speed_pwm*1.5));	
+	right_wheel_backward((u8)((float)speed_pwm*1.3));	
 }
 void stop(void)
 {
